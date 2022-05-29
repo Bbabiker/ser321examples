@@ -25,6 +25,7 @@ import java.util.Random;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.nio.charset.Charset;
+import org.json.*;
 
 class WebServer {
   public static void main(String args[]) {
@@ -195,50 +196,153 @@ class WebServer {
           }
         } else if (request.contains("multiply?")) {
           // This multiplies two numbers, there is NO error handling, so when
-          // wrong data is given this just crashes
+                    // wrong data is given this just crashes
 
-          Map<String, String> query_pairs = new LinkedHashMap<String, String>();
-          // extract path parameters
-          query_pairs = splitQuery(request.replace("multiply?", ""));
+                    Map<String, String> query_pairs = new LinkedHashMap<String, String>();
+                    // extract path parameters
+                    query_pairs = splitQuery(request.replace("multiply?", ""));
 
-          // extract required fields from parameters
-          Integer num1 = Integer.parseInt(query_pairs.get("num1"));
-          Integer num2 = Integer.parseInt(query_pairs.get("num2"));
 
-          // do math
-          Integer result = num1 * num2;
+                    String s = query_pairs.entrySet().toString();
+                    String st = "";
+                    for (int i = 0; i < s.length(); i++) {
 
-          // Generate response
-          builder.append("HTTP/1.1 200 OK\n");
-          builder.append("Content-Type: text/html; charset=utf-8\n");
-          builder.append("\n");
-          builder.append("Result is: " + result);
+                        if (s.charAt(i) != '=') {
+                            st = st + s.charAt(i);
 
-          // TODO: Include error handling here with a correct error code and
-          // a response that makes sense
+                        }
 
-        } else if (request.contains("github?")) {
-          // pulls the query from the request and runs it with GitHub's REST API
-          // check out https://docs.github.com/rest/reference/
-          //
-          // HINT: REST is organized by nesting topics. Figure out the biggest one first,
-          //     then drill down to what you care about
-          // "Owner's repo is named RepoName. Example: find RepoName's contributors" translates to
-          //     "/repos/OWNERNAME/REPONAME/contributors"
+                    }
 
-          Map<String, String> query_pairs = new LinkedHashMap<String, String>();
-          query_pairs = splitQuery(request.replace("github?", ""));
-          String json = fetchURL("https://api.github.com/" + query_pairs.get("query"));
-          System.out.println(json);
+                    try {
 
-          builder.append("HTTP/1.1 200 OK\n");
-          builder.append("Content-Type: text/html; charset=utf-8\n");
-          builder.append("\n");
-          builder.append("Check the todos mentioned in the Java source file");
-          // TODO: Parse the JSON returned by your fetch and create an appropriate
-          // response based on what the assignment document asks for
+                        Integer num1 = Integer.parseInt(query_pairs.get("num1"));
+                        Integer num2 = Integer.parseInt(query_pairs.get("num2"));
 
-        } else {
+                        Integer result = num1 * num2;
+
+                        //new URI(request).getPath();
+                        // Generate response
+                        builder.append("HTTP/1.1 200 OK\n");
+                        builder.append("Content-Type: text/html; charset=utf-8\n");
+                        builder.append("\n");
+                        builder.append("Result is: " + result);
+                        builder.append("\n " + new URI(request).getPath());
+
+                        builder.append("\n " + new URI(request).getRawQuery().getBytes());
+                        builder.append("\n " + request);
+                        builder.append("\n " + query_pairs.entrySet());
+                        builder.append("\n " + st);
+
+
+                        // TODO: Include error handling here with a correct error code and
+                        // a response that makes sense
+
+                        // URL u= new URL(request);
+
+
+                    } catch (Exception e) {
+
+                        // new URL(request);
+                        builder.append("HTTP/1.1 400 Bad Request\n");
+                        builder.append("Content-Type: text/html; charset=utf-8\n");
+                        builder.append("\n");
+                        builder.append("Error 400: " + e.getMessage());
+
+
+                    }
+
+                } else if (request.contains("github?")) {
+                    // pulls the query from the request and runs it with GitHub's REST API
+                    // check out https://docs.github.com/rest/reference/
+                    //
+                    // HINT: REST is organized by nesting topics. Figure out the biggest one first,
+                    //     then drill down to what you care about
+                    // "Owner's repo is named RepoName. Example: find RepoName's contributors" translates to
+                    //     "/repos/OWNERNAME/REPONAME/contributors"
+
+                    Map<String, String> query_pairs = new LinkedHashMap<String, String>();
+                    query_pairs = splitQuery(request.replace("github?", ""));
+                    String json = fetchURL("https://api.github.com/" + query_pairs.get("query"));
+                    System.out.println(json);
+
+
+                    JSONArray array = new JSONArray(json);
+                    String s = "";
+
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject jsonObj = array.getJSONObject(i);
+                        s = s + "[ Repo: " + jsonObj.get("name") + " | ID: " + jsonObj.get("id") + " | Owner login: " + jsonObj.getJSONObject("owner").get("login") + " ]\n";
+                        System.out.println(jsonObj.get("name"));
+                    }
+
+
+                    builder.append("HTTP/1.1 200 OK\n");
+                    builder.append("Content-Type: text/html; charset=utf-8\n");
+                    builder.append("\n");
+                    builder.append(s);
+
+                    //builder.append("Check the todos mentioned in the Java source file");
+                    // TODO: Parse the JSON returned by your fetch and create an appropriate
+                    // response based on what the assignment document asks for
+
+                } else if (request.contains("commits?")) {
+                    // pulls the query from the request and runs it with GitHub's REST API
+                    // check out https://docs.github.com/rest/reference/
+                    //
+                    // HINT: REST is organized by nesting topics. Figure out the biggest one first,
+                    //     then drill down to what you care about
+                    // "Owner's repo is named RepoName. Example: find RepoName's contributors" translates to
+                    //     "/repos/OWNERNAME/REPONAME/contributors"
+                    Map<String, String> query_pairs = new LinkedHashMap<String, String>();
+                    query_pairs = splitQuery(request.replace("commits?", ""));
+                    String repo = query_pairs.get("rp");
+                    String branch = query_pairs.get("br");
+                    String s = "";
+
+                    if (query_pairs.get("rp").length() > 0 && query_pairs.get("br").length() > 0) {
+
+                        String json = fetchURL("https://api.github.com/repos/" + repo + "/commits?sha=" + branch);
+                        JSONArray array = new JSONArray(json);
+
+                        for (int i = 0; i < array.length(); i++) {
+                            JSONObject jsonObj = array.getJSONObject(i);
+                            s = s + "\n[ Commit message #" + (i + 1) + " ] " + jsonObj.getJSONObject("commit").get("message") + " \n";
+
+                        }
+
+                    } else {
+                        s = " Please enter a valid queries.";
+                    }
+                    builder.append("HTTP/1.1 200 OK\n");
+                    builder.append("Content-Type: text/html; charset=utf-8\n");
+                    builder.append("\n");
+                    builder.append(s);
+
+        } else if (request.contains("encode?")) {
+
+                    Map<String, String> query_pairs = new LinkedHashMap<String, String>();
+                    query_pairs = splitQuery(request.replace("encode?", ""));
+
+                    String s = query_pairs.get("s1");
+                    String password = "";
+                    String num = query_pairs.get("n");
+                    String string = "";
+
+                    if (s.length() > 0 && num.length()>0) {
+                        for (int i = 0; i < s.length(); i++) {
+                          string = string + s.charAt(i) + num;
+                            password = string;
+                        }
+                    } else {
+                        password = "Please enter a string";
+                    }
+                    builder.append("HTTP/1.1 200 OK\n");
+                    builder.append("Content-Type: text/html; charset=utf-8\n");
+                    builder.append("\n");
+                    builder.append(password);
+
+                }  else{
           // if the request is not recognized at all
 
           builder.append("HTTP/1.1 400 Bad Request\n");
