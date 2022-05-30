@@ -271,52 +271,30 @@ class WebServer {
                     query_pairs = splitQuery(request.replace("multiply?", ""));
 
 
+                    //used try/catch block to handle the error
+                    try {
 
-                  try {
-              /*  if (!query_pairs.get("num1").getClass().isInstance(String.class) &&
-                        !query_pairs.get("num2").getClass().isInstance(String.class)&&
-                        query_pairs.get("num1")!=null&& query_pairs.get("num2")!=null) {*/
+                        Integer num1 = Integer.parseInt(query_pairs.get("num1"));
+                        Integer num2 = Integer.parseInt(query_pairs.get("num2"));
 
-                    Integer num1 = Integer.parseInt(query_pairs.get("num1"));
-                    Integer num2 = Integer.parseInt(query_pairs.get("num2"));
+                        Integer result = num1 * num2;
 
-                    Integer result = num1 * num2;
-
-                    //new URI(request).getPath();
-                    // Generate response
-                    builder.append("HTTP/1.1 200 OK\n");
-                    builder.append("Content-Type: text/html; charset=utf-8\n");
-                    builder.append("\n");
-                    builder.append("Result is: " + result);
-
-              //  }
+                        builder.append("HTTP/1.1 200 OK\n");
+                        builder.append("Content-Type: text/html; charset=utf-8\n");
+                        builder.append("\n");
+                        builder.append("Result is: " + result);
 
 
+                        // TODO: Include error handling here with a correct error code and
+                        // a response that makes sense
 
-                // builder.append("\n " + new URI(request).getPath());
-            //}
-                           // builder.append("\n " + new URI(request).getRawQuery().getBytes());
-                           // builder.append("\n " + request);
-                           // builder.append("\n " + query_pairs.entrySet());
-                          //  builder.append("\n " + st);
+                    } catch (Exception e) {
 
-
-                            // TODO: Include error handling here with a correct error code and
-                            // a response that makes sense
-
-                            // URL u= new URL(request);
-
-
-                        } catch (Exception e) {
-
-                            // new URL(request);
-                            builder.append("HTTP/1.1 400 Bad Request\n");
-                            builder.append("Content-Type: text/html; charset=utf-8\n");
-                            builder.append("\n");
-                            builder.append("Error 400: " + e.getMessage());
-
-
-                        }
+                        builder.append("HTTP/1.1 400 Bad Request\n");
+                        builder.append("Content-Type: text/html; charset=utf-8\n");
+                        builder.append("\n");
+                        builder.append("Error 400: " + e.getMessage());//prints error message
+                    }
 
 
                 } else if (request.contains("github?")) {
@@ -338,12 +316,14 @@ class WebServer {
                     String s = "";
 
                     for (int i = 0; i < array.length(); i++) {
-                        JSONObject jsonObj = array.getJSONObject(i);
-                        s = s + "[ Repo: " + jsonObj.get("name") + " | ID: " + jsonObj.get("id") + " | Owner login: " + jsonObj.getJSONObject("owner").get("login") + " ]"+ "<br>";
+                        JSONObject jsonObj = array.getJSONObject(i);//extract every element for further processing
+                        //extracts and format the data from the json onject
+                        s = s + "[ Repo: " + jsonObj.get("name") + " | ID: " + jsonObj.get("id") + " | Owner login: "
+                                + jsonObj.getJSONObject("owner").get("login") + " ]" + "<br>";
                         System.out.println(jsonObj.get("name"));
                     }
 
-
+                    // everything is ok, and print ok message
                     builder.append("HTTP/1.1 200 OK\n");
                     builder.append("Content-Type: text/html; charset=utf-8\n");
                     builder.append("\n");
@@ -354,101 +334,54 @@ class WebServer {
                     // response based on what the assignment document asks for
 
                 } else if (request.contains("commits?")) {
-                    // pulls the query from the request and runs it with GitHub's REST API
-                    // check out https://docs.github.com/rest/reference/
-                    //
-                    // HINT: REST is organized by nesting topics. Figure out the biggest one first,
-                    //     then drill down to what you care about
-                    // "Owner's repo is named RepoName. Example: find RepoName's contributors" translates to
-                    //     "/repos/OWNERNAME/REPONAME/contributors"
+                    // this task prints all commits messages for a given branch
+                    //from api.github. It requires the OWNER/REPO and BRANCH as inputs.
                     Map<String, String> query_pairs = new LinkedHashMap<String, String>();
                     query_pairs = splitQuery(request.replace("commits?", ""));
-                    String repo = query_pairs.get("rp");
-                    String branch = query_pairs.get("br");
+                    String repo = query_pairs.get("rp");//extract the repo name
+                    String branch = query_pairs.get("br");//extract the branch name
                     String s = "";
-
+                    //error handeling: check no imputs was entered
                     if (query_pairs.get("rp").length() > 0 && query_pairs.get("br").length() > 0) {
-
+                        //extract all commits of the chosen branch to a json object
                         String json = fetchURL("https://api.github.com/repos/" + repo + "/commits?sha=" + branch);
-                        JSONArray array = new JSONArray(json);
+                        JSONArray array = new JSONArray(json);//create a json aray
 
-                        for (int i = 0; i < array.length(); i++) {
-                            JSONObject jsonObj = array.getJSONObject(i);
-                            s = s + "\n[ Commit message #" + (i + 1) + " ] " + jsonObj.getJSONObject("commit").get("message") + "<br>";
+                        for (int i = 0; i < array.length(); i++) {//parse the json array
+                            JSONObject jsonObj = array.getJSONObject(i);//extract every element for further processing
+                            s = s + "\n[ Commit message #" + (i + 1) + " ] " +
+                                    jsonObj.getJSONObject("commit").get("message") + "<br>";//get the message and
+                            // formate the output
 
                         }
 
-                    } else {
+                    } else { // error handeling: if no parameters entered
                         s = " Please enter a valid queries.";
                     }
-                    builder.append("HTTP/1.1 200 OK\n");
+                    builder.append("HTTP/1.1 200 OK\n");//otherwise, everything is ok, and print ok message
                     builder.append("Content-Type: text/html; charset=utf-8\n");
                     builder.append("\n");
                     builder.append(s);
 
-                } else if (request.contains("data?")) {
-
-                    Map<String, String> query_pairs = new LinkedHashMap<String, String>();
-                    query_pairs = splitQuery(request.replace("data?", ""));
-
-                    //System.out.println(json);
-                    // https://api.github.com/repos/bbabiker/assign1git/commits?sha=newbranch
-                    //  String st ="https://api.github.com/repos/"+query_pairs.get("q")+"/commits?sha="+query_pairs.get("s");
-
-                    String json = fetchURL("https://api.github.com/users/" + query_pairs.get("q") + "/repos");
-                    String json1 = ""; //fetchURL("https://api.github.com/repos/" + query_pairs.get("q") + "/branches");
-
-                    JSONArray array = new JSONArray(json);
-                    //JSONArray array1=new JSONArray(json1);
-                    String s = "";//String s1="";
-
-                    //  builder.append("Content-Type: text/html; charset=utf-8\n");
-                    //int j=0;
-                    int brCount = 0;
-                    int repCount = 0;
-                    for (int i = 0; i < array.length(); i++) {
-                        JSONObject jsonObj = array.getJSONObject(i);
-
-                        String json2 = fetchURL("https://api.github.com/repos/" + query_pairs.get("q") + "/" + jsonObj.get("name") + "/branches");
-                        JSONArray array1 = new JSONArray(json2);
-                        String s1 = "";
-                        for (int j = 0; j < array1.length(); j++) {
-                            JSONObject jsonObj1 = array1.getJSONObject(j);
-                            brCount++;
-                            s1 = s1 + "( branch: " + jsonObj1.get("name") + " )\n";
-                            // j++;
-                        }
-                        repCount++;
-                        s = s + "[ Repo: " + jsonObj.get("name") + " ]" + s1 + "\n////   ";
-
-                    }
-
-
-                    builder.append("HTTP/1.1 200 OK\n");
-                    builder.append("Content-Type: text/html; charset=utf-8\n");
-                    builder.append("\n");
-                    builder.append(repCount);
-                    builder.append(s);
-                    //builder.append(s1);
-                } else if (request.contains("encode?")) {
+                } else if (request.contains("encode?")) {//simple string encoder
 
                     Map<String, String> query_pairs = new LinkedHashMap<String, String>();
                     query_pairs = splitQuery(request.replace("encode?", ""));
 
-                    String s = query_pairs.get("s1");
-                    String password = "";
-                    String num = query_pairs.get("n");
+                    String s = query_pairs.get("s1");// get the string to be encoded
+                    String password = "";//to hold the returned string
+                    String num = query_pairs.get("n");//get the number used for the encoding
                     String string = "";
 
-                    if (s.length() > 0 && num.length()>0) {
+                    if (s.length() > 0 && num.length() > 0) {//parse the input string
                         for (int i = 0; i < s.length(); i++) {
-                          string = string + s.charAt(i) + num;
+                            string = string + s.charAt(i) + num;//insert the numner after each character
                             password = string;
                         }
                     } else {
-                        password = "Please enter a string";
+                        password = "Please enter a string";//error handling if no parameter is entered
                     }
-                    builder.append("HTTP/1.1 200 OK\n");
+                    builder.append("HTTP/1.1 200 OK\n");//otherwise prints a success message
                     builder.append("Content-Type: text/html; charset=utf-8\n");
                     builder.append("\n");
                     builder.append(password);
