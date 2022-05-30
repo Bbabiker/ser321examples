@@ -9,17 +9,12 @@
 			<li>/json -- returns a json of the /random request</a></li>
 			<li>/random -- returns index.html</a></li>
 	
-			<li>/multiply? -- multiply two numbers, 'num1=FIRST_OPERAND' and 'num2=SECOND_OPERAND'
-			<br/> EXAMPLE: /multiply?num1=5 & num2=5 --Will return 25</a></li>
+			<li>/multiply?num1=5&num2=5 --prints '25'</a></li>
 	
-			<li>/github? -- returns all public repositories  for a given  user, parameter 'query=users/OWNER/repos ' users/amehlhase316/repos
-				 EXAMPLE: /github?query=users/amehlhase316/repos--Will print all public repositories for amehlhase316</a></li>
+			<li>/github?query=users/amehlhase316/repos --prints all public repos for 'amehlhase316'</a></li>
 	
-			<li>/commits? -- returns all commits messages for a given  repository, parameters are 'rp=OWNER/REPO '
-				and 'br=BRANCH NAME EXAMPLE: /comm?q=bbabiker/assign1git&s=newbranch--Will print all comits'
-			messages for NEWBRANCH</a></li>
-			<li>/encode? -- returns a simple encoded string, parameters are 's1=SOME_STRING '
-				and 'n=ENCODING_CHARACTER EXAMPLE:/encode?s1=babiker&n=2--Will print 'b2a2b2i2k2e2r2</a></li>
+			<li>/commits?rp=bbabiker/assign1git&br=newbranch --prints all commits messages for NEWBRANCH</a></li>
+			<li>/encode?s1=babiker&n=2 --prints 'b2a2b2i2k2e2r2'</a></li>
 
 		</ul>
 		<h3>File Structure in www (you can use /file/www/FILENAME):</h3>
