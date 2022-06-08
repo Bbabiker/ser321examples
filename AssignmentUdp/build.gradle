@@ -1,0 +1,53 @@
+// set as java application
+apply plugin: 'application'
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  // https://mvnrepository.com/artifact/org.json/json
+  implementation 'org.json:json:20220320'
+}
+
+
+//define main class
+mainClassName = 'Concentration'
+
+
+
+
+//gradle UDPServer -Pport='8888'
+task UDPServer(type: JavaExec) {
+  group 'udp'
+  description 'Displays a GUI for a game of concentration'
+
+  classpath = sourceSets.main.runtimeClasspath
+
+  main = 'customProtocol.udp.Server'
+  standardInput = System.in
+
+  if (project.hasProperty("port") && project.hasProperty("host")) {
+    args(project.getProperty('port'), project.getProperty('host'));
+  }
+
+  args '8080' // default port
+  args 'localhost' // default host
+
+}
+
+//gradle UDPClient -Phost=localhost -Pport='8888'
+task UDPClient(type: JavaExec) {
+  group 'udp'
+  description 'Takes an image and makes the rebus library'
+
+  classpath = sourceSets.main.runtimeClasspath
+
+  main = 'customProtocol.udp.Client'
+  standardInput = System.in
+  if (project.hasProperty("port")) {
+    args(project.getProperty('port'))
+  }
+  args '8080' // default port
+
+}
