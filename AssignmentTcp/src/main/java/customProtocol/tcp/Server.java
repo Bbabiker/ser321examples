@@ -105,10 +105,10 @@ public class Server {
     public static JSONObject joker() {
         JSONObject json = new JSONObject();
         JSONArray array = new JSONArray();
-        array.put("img/Jocker/quote1.png");
-        array.put("img/Jocker/quote2.png");
-        array.put("img/Jocker/quote3.png");
-        array.put("img/Jocker/quote4.png");
+        array.put("img/joker/quote1.png");
+        array.put("img/joker/quote2.png");
+        array.put("img/joker/quote3.png");
+        array.put("img/joker/quote4.png");
         json.put("datatype", "joker");
         json.put("data", array);
         return json;
@@ -144,7 +144,7 @@ public class Server {
         array.put("img/Wolverine/quote2.png");
         array.put("img/Wolverine/quote3.png");
         array.put("img/Wolverine/quote4.png");
-        json.put("datatype", "wolv");
+        json.put("datatype", "wolverine");
         json.put("data", array);
         return json;
     }
@@ -387,6 +387,7 @@ public class Server {
         ArrayList list = new ArrayList<JSONObject>();//list contain characters already processed.
         ArrayList leader = new ArrayList<JSONObject>();//list contain characters already
         JSONArray listC = charList();//JsonArray contains all game's characters.
+
         String name = "";//client name
         int port;
         try {
@@ -404,12 +405,22 @@ public class Server {
 
                     // write(out, mesage("hello and welcome to the game, what is your name ?."));
 
-                    long start = System.currentTimeMillis();//start time
-                    long end = start +60000;//1 minute timer
 
                     while (true) {
+
+                        long start = System.currentTimeMillis();//start time
+                        long end = start + 60000;//1 minute timer
+
+                        //reset all variables for new game
+                        temp = null;
+                        charCount = 0;
+                        correct = 0;
+
+                        image = 0;
+
                         write(out, mesage("hello and welcome to the game, what is your name ?."));
-                        while (System.currentTimeMillis() <= end || round <= 4) {
+
+                        while (System.currentTimeMillis() <= end && correct < 3 && round<7) {
                             JSONObject message = read(in);//read byte stream from the server and convert it into string
 
 
@@ -429,26 +440,6 @@ public class Server {
                                         returnMessage = mesage("hello " + message.getString("name") + "\nenter: 'LEADER' to see the leader board.\nenter: 'START' to start the game");
 
                                     }
-                                    if (choice.equalsIgnoreCase("start")) {//if started
-
-                                        //start the game with the first image of the first character in the list
-                                        returnMessage = imageMake(listC.getJSONObject(charCount), image);
-                                        temp = listC.getJSONObject(charCount);//store the sent character for later checking
-                                        list.add(temp);//store the sent object for checking answer later
-                                        System.out.println(returnMessage.getString("datatype"));//print to the server terminal
-
-
-                                    }
-
-                                    if (choice.equalsIgnoreCase("leader")) {//if started
-
-                                        //return a list of leader board
-                                        returnMessage = mesage(showLeaderBoard(leader));
-
-                                        System.out.println(showLeaderBoard(leader));//print to the server terminal
-
-
-                                    }
 
                                     if (choice.equalsIgnoreCase("quit")) {//if end, then terminate and exit
                                         //close streams and socket,the exit
@@ -458,91 +449,106 @@ public class Server {
                                         System.exit(0);
                                         break;
                                     }
-                                    if (checkAnswer(list, choice) == true) {//check the client response
-                                        //if true, display a message
-
-                                        //                   write(out, mesage("Correct, nice work, press 'Enter' to continue."));
-                                        //removChar(list, choice);//remove the current character from the list
-                                        image = 0;//reset image counter
-                                        correct++;//increment number of correct answer
-                                        charCount++;//increment list index
-
-                                        if (charCount < listC.length()) { //if not the end of the list
-                                            temp = listC.getJSONObject(charCount);//reset temp for another image type
-                                            returnMessage = imageMake(temp, image);//return new character
 
 
-                                            returnMessage.put("message", "Your previous answer was correct. Here another one.");
+                                    if (temp == null) {
+                                        if (choice.equalsIgnoreCase("start")) {//if started
 
-                                            list.add(temp);//add the new character to the list
-                                            System.out.println(temp.getString("datatype"));
-
-                                        } else { //otherwise we reached the end of the list and we terminate the game and display the score
-
-                                            if (correct >= 3) {
-                                                returnMessage = imageMake(win(), 0);
-
-                                               // returnMessage.put("message", "You scored: " + correct);
-                                            }
-                                            if (correct < 3) {
-                                                returnMessage = imageMake(win(), 0);
-
-                                               // returnMessage.put("message", "You scored: " + correct);
-                                            }
+                                            //start the game with the first image of the first character in the list
+                                            returnMessage = imageMake(listC.getJSONObject(charCount), image);
+                                            temp = listC.getJSONObject(charCount);//store the sent character for later checking
+                                            list.add(temp);//store the sent object for checking answer later
+                                            System.out.println(returnMessage.getString("datatype"));//print to the server terminal
 
 
                                         }
 
+                                        if (choice.equalsIgnoreCase("leader")) {//if started
+
+                                            //return a list of leader board
+                                            returnMessage = mesage(showLeaderBoard(leader));
+
+                                            System.out.println(showLeaderBoard(leader));//print to the server terminal
+
+
+                                        }
                                     } else {
 
-                                        returnMessage.put("message", "incorrect, try again");// = mesage("incorrect, try again");
 
-                                    }
+                                        if (checkAnswer(list, choice) == true) {//check the client response
 
-                                    if (choice.equalsIgnoreCase("more")) {//if the user ask for more image
-                                        if (temp != null) {//make sure an image exist
-
-
-                                            image++;
-                                            if (image < 4) {//makes sure within the number of images
-                                                // write(out, imageMake(temp, i));
-                                                returnMessage = imageMake(temp, image);// send the new character image imageMake(temp, i);
+                                            removChar(list, choice);//remove the current character from the list
+                                            image = 0;//reset image counter
+                                            correct++;//increment number of correct answer
+                                            charCount++;//increment list index
 
 
-                                            } else {//otherwise all images for this character have been displayed
-                                                //  write(out, mesage("Sorry, this is the final image of this character"));
-                                                // i=0;
-                                                returnMessage = mesage("Sorry, this is the final image of this character");
-                                            }
-                                        }
-                                        wrong++;
+                                            if (charCount < listC.length()) { //if not the end of the list
 
-                                    }
-
-                                    if (choice.equalsIgnoreCase("next")) {//if the user ask for more image
-                                        if (temp != null) {//make sure an image exist
-
-                                            image = 0;
-                                            charCount++;
-                                            if (charCount < 7) { //if not the end of the list
                                                 temp = listC.getJSONObject(charCount);//reset temp for another image type
                                                 returnMessage = imageMake(temp, image);//return new character
-                                                //  list.add(temp);//add the new character to the list
-                                                System.out.println(temp.getString("datatype"));
+                                                returnMessage.put("message", "Your previous answer was correct. Here another one.");
+
+                                                list.add(temp);//add the new character to the list
+                                                System.out.println(temp.getString("datatype"));//print to server terminal
 
                                             } else { //otherwise we reached the end of the list and we terminate the game and display the score
+                                             round=7;
 
-                                                returnMessage = mesage("Sorry ! no more character available");
+                                            }
 
-                                                charCount = 0;
+                                        } else {
+                                            //client choice was incorrect
+                                            returnMessage.put("message", "incorrect, try again");
+                                            round++;//increment round
+
+                                             }
+
+                                        if (choice.equalsIgnoreCase("more")) {//if the user ask for more image
+                                            if (temp != null) {//make sure an image exist
+
+
+                                                image++;
+                                                if (image < 4) {//makes sure within the number of images
+
+                                                    returnMessage = imageMake(temp, image);// send the new character image imageMake(temp, i);
+
+
+                                                } else {//otherwise all images for this character have been displayed
+
+                                                    returnMessage = mesage("Sorry, this is the final image of this character");
+                                                }
                                             }
 
                                         }
-                                        wrong++;
 
+                                        if (choice.equalsIgnoreCase("next")) {//if the user ask for more image
+                                            if (temp != null) {//make sure an image exist
+
+
+                                                image = 0;//reset the image counter
+                                                charCount++;//increment the character counter
+
+                                                if (charCount < 7) { //if not the end of the list
+
+                                                    temp = listC.getJSONObject(charCount);//reset temp for next image type
+                                                    returnMessage = imageMake(temp, image);//return new character
+                                                    list.add(temp);//add the new character to the list
+                                                    System.out.println(temp.getString("datatype"));
+
+                                                } else { //otherwise we reached the end of the list and we terminate the game and display the score
+
+                                                    returnMessage = mesage("Sorry ! no more character available");
+
+                                                    charCount = 0;//reset the counter
+                                                    image=0;
+                                                    break;
+                                                }
+
+                                            }
+
+                                        }
                                     }
-                                    //  write(out, returnMessage);
-                                    //  continue;
                                 } else {
                                     returnMessage = error("Selection must be String");
                                 }
@@ -550,30 +556,32 @@ public class Server {
                                 returnMessage = error("Invalid message received");
                             }
                             write(out, returnMessage);///////////////
-                            round++;
-                            //continue;
-                        }
-                        if (correct >= 3 && round >= 3) {
+                            // round++;
 
-                            returnMessage = imageMake(win(), 0);
-                           // returnMessage.put("message", "Game over\n you scored: " + correct + " point");
-                            //  write(out, returnMessage);
+                        }
+                        if (correct >= 3) {//after timer expired, chec the correct answer
+
+                            returnMessage = imageMake(win(), 0);//if correct, return win image
+                            returnMessage.put("message", "Game over\n you scored: " + correct + " point");
+                            //write(out, returnMessage);
 
                         } else {
-
-                            returnMessage = imageMake(lose(), 0);
-                          //  returnMessage.put("message", "Game over\n you scored: " + correct + " point");
+                            returnMessage = imageMake(lose(), 0);//else return lose image
+                            returnMessage.put("message", "Game over\n you scored: " + correct + " point");
                             //  write(out, returnMessage);
 
                         }
-                        addScore(leader, name, correct);
-                        write(out, returnMessage);
+                        addScore(leader, name, correct);//update leader board
+                        write(out, returnMessage);//print response
+
+                      /*  //reset all variable
                         temp = null;
                         charCount = 0;
                         correct = 0;
                         round = 0;
                         image = 0;
-                        continue;
+                        list=null;*/
+
                     }
 
 

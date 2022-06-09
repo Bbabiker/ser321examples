@@ -23,7 +23,7 @@ public class Client {
      * response: {"datatype": <string: character>,"data": [images] }
      *
      * error response: {"error": <error string> }
-     * message :{"datatype": <string: message>, "reply": <message string>}
+     * message :{"selected": <string: message>, "name": <message string>}
      *
      * @author Babiker, SER321 teaching team
      */
@@ -127,6 +127,17 @@ public class Client {
 
             return true;
         }
+
+        if (st.equalsIgnoreCase("win")) {
+
+            return true;
+        }
+
+        if (st.equalsIgnoreCase("lose")) {
+
+            return true;
+        }
+
         return false;
     }
 
@@ -168,13 +179,18 @@ public class Client {
                     System.out.println(response.getString("reply"));
 
                 }
+                //for new game, check if last image was lose or a win
+                if(response.getString("datatype").equalsIgnoreCase("lose")||
+                        response.getString("datatype").equalsIgnoreCase("win")){
 
+                    request=null;
+                }
                 choice = input.nextLine(); //read client input
 
 
                 //if previous request was made, then client name was already sent and the game
                 //has already started.
-                if (request != null) {
+                if (request != null ) {
                     request = new JSONObject();
                     request.put("selected", choice);//create a request with the client input
 
@@ -185,12 +201,12 @@ public class Client {
 
 
                     //otherwise, if no request was previously made, send the client name
-                } else if (request == null) {
+                }  if (request == null) {
                     request = name(choice);
                     System.out.println(request.getString("name"));
                     NetworkUtils.Send(out, JsonUtils.toByteArray(request));
 
-                } else if (choice.equalsIgnoreCase("quit") ) {//if a client enter end the game will terminates.
+                }  if (choice.equalsIgnoreCase("quit") ) {//if a client enter end the game will terminates.
                     //send the request to the sever and close the socket and streaming objects
                     NetworkUtils.Send(out, JsonUtils.toByteArray(request));
                     sock.close();
@@ -200,7 +216,7 @@ public class Client {
                     break;
                 }
 
-continue;
+
             } while (true);
 
         } catch (IOException e) {
