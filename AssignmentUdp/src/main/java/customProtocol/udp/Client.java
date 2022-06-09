@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.util.Base64;
 import java.util.Scanner;
 
@@ -16,7 +17,7 @@ public class Client {
      *this class serves as a client for a simple game implemented using custom UDP portocol
      *for data  exchannge with the server.
 
-     * request: { "selected": <String:captain, darth, homer, jack, joker, tony, wolverine > }
+     * request: { "selected": <String:captain, darth, homer, jack, joker, tony, wolverine, message > }
      *
      * response: {"datatype": <string: character>,"data": [images] }
      *
@@ -36,6 +37,18 @@ public class Client {
     public static JSONObject name(String s) {
         JSONObject request = new JSONObject();
         request.put("selected", "name");
+        request.put("name", s);
+        return request;
+    }
+
+    /**
+     * name object
+     *
+     * @return json object with the message.
+     */
+    public static JSONObject message(String s) {
+        JSONObject request = new JSONObject();
+        request.put("selected", "message");
         request.put("name", s);
         return request;
     }
@@ -109,15 +122,19 @@ public class Client {
     }
 
     public static void main(String[] args) throws IOException {
-        int port;
         DatagramSocket sock;
         JSONObject request = null;
+        InetAddress address = InetAddress.getByName("localhost");//host
+        int port;// port
+        NetworkUtils.Tuple messageTuple;//helper object from NetworkUtil that hold the packet data meta-date
 
         try {
-            //set the port and host
-            port = Integer.parseInt(args[0]);
 
-            sock = new DatagramSocket(port);//socket for UDP
+            port = Integer.parseInt(args[0]);// set the port
+            sock = new DatagramSocket();// set the UDP socket
+
+            //send initial message to server as handshake
+            NetworkUtils.Send(sock, address, port, JsonUtils.toByteArray(message("hello server")));
 
             Scanner input = new Scanner(System.in);
             String choice;
@@ -125,9 +142,10 @@ public class Client {
             do {
 
 
-                NetworkUtils.Tuple messageTuple = NetworkUtils.Receive(sock);//get data from the server
+               messageTuple = NetworkUtils.Receive(sock);//get data from the server
                 //convert the received data from bytes int json object
                 //with a helper method from NetworkUtils
+
                 JSONObject response = JsonUtils.fromByteArray(messageTuple.Payload);
 
                 if (checkImage(response) == true) {//check if contains an image

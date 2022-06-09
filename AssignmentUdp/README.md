@@ -7,7 +7,7 @@
 
 
 this is a simple program to simulate a client/server communication over custom UDP protocol.
-this communication is simplified version of the custom TCP protocol. This program starts with the server sending a greeting message asking for the client’s name, and the client respond with her/his name. The server sends another greeting message with the client’s name. The client then enter 'START' and the server respond with an image.
+this communication is simplified version of the custom TCP protocol. This program starts with the cleint sending an intital handshake message to the server, and server send a greeting message asking for the client’s name, and the client respond with her/his name. The server sends another greeting message with the client’s name. The client then enter 'START' and the server respond with an image.
 
 again, like the TCP protocol, we are  converting all the data to a byte[] and not just sending over the String and letting Java do the rest
 

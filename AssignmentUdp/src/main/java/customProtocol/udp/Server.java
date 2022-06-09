@@ -284,16 +284,14 @@ public class Server {
         JSONObject returnMessage = null;//message returned to the client
         ArrayList list = new ArrayList<JSONObject>();//list contain characters already processed.
         JSONArray listC = charList();//JsonArray contains all game's characters.
-        InetAddress address = InetAddress.getByName("localhost");//host
-        int port;// port
-        NetworkUtils.Tuple messageTuple;//helper object from NetworkUtil that hold the packet data meta-date
-        // (port,host, and payload)
-        try {
-            port = Integer.parseInt(args[0]);// set the port
-            sock = new DatagramSocket();// set the UDP socket
 
-            //helper method from NetworkUtils for sending a packet
-            NetworkUtils.Send(sock, address, port, JsonUtils.toByteArray(message("hello and welcome" + " to the game, what is your name ?.")));
+        int port;// port
+
+        try {
+          //  port = Integer.parseInt(args[0]);// set the port
+            port = Integer.parseInt(args[0]);
+            sock = new DatagramSocket(port);// set the UDP socket
+
             while (true) {
 
 
@@ -301,10 +299,9 @@ public class Server {
 
                     while (true) {
 
-                        messageTuple = NetworkUtils.Receive(sock);//get data from the client
-                        //convert the received data from bytes int json object
-                        //with a helper method from NetworkUtils
+                        NetworkUtils.Tuple messageTuple = NetworkUtils.Receive(sock);
                         JSONObject message = JsonUtils.fromByteArray(messageTuple.Payload);
+
 
                         //if the received object contains 'selected' then it's valid for processing.
                         if (message.has("selected")) {
@@ -315,11 +312,34 @@ public class Server {
                                 String clientInput = message.getString("selected");
 
 
-                                if (clientInput.equalsIgnoreCase("name")) {//if name 'header' received
+                                if (clientInput.equalsIgnoreCase("message")) {//if name 'header' received
                                     //return greeting message with the player name
-                                    returnMessage = message("hello " + message.getString("name") + "\nenter: 'LEADER' to see the leader board.\nenter: 'START' to start the game");
+
+                                    returnMessage=message("hello and welcome to the game, what is your name ?.");
+
+
+                                    //send greeting message
+                                    byte[] output = JsonUtils.toByteArray(returnMessage);
+                                    NetworkUtils.Send(sock, messageTuple.Address, messageTuple.Port, output);
 
                                 }
+
+                                if (clientInput.equalsIgnoreCase("name")) {//if name 'header' received
+                                    //return greeting message with the player name
+
+                                    returnMessage=message("hello " + message.getString("name") +
+                                            "\nenter: 'LEADER' to see the leader board.\nenter: 'START' to start the game");
+
+
+                                    byte[] output = JsonUtils.toByteArray(returnMessage);
+                                    NetworkUtils.Send(sock, messageTuple.Address, messageTuple.Port, output);
+                                    // NetworkUtils.Send(sock, messageTuple.Address, messageTuple.Port, output);
+
+                                    // returnMessage = message("hello " + message.getString("name") + "\nenter: 'LEADER' to see the leader board.\nenter: 'START' to start the game");
+
+                                }
+
+
                                 if (clientInput.equalsIgnoreCase("start")) {//if started
 
                                     //start the game with the first image of the first character in the list
@@ -327,7 +347,8 @@ public class Server {
                                     temp = listC.getJSONObject(charCount);//store sent character for later checking
                                     list.add(temp);//store  sent object for checking answer later
                                     System.out.println(returnMessage.getString("datatype"));//print to the server terminal
-                                    NetworkUtils.Send(sock, address, port, JsonUtils.toByteArray(returnMessage));
+                                    byte[] output = JsonUtils.toByteArray(returnMessage);
+                                    NetworkUtils.Send(sock, messageTuple.Address, messageTuple.Port, output);
 
                                 }
                                 if (clientInput.equalsIgnoreCase("quit")) {//if 'quit', then terminate and exit
@@ -337,7 +358,6 @@ public class Server {
                                     break;
                                 }
 
-                                NetworkUtils.Send(sock, address, port, JsonUtils.toByteArray(returnMessage));
 
                             } else {//otherwise the entry is not a string, inform the client
                                 returnMessage = error("Selection must be String");

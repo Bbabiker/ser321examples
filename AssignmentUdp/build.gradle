@@ -26,13 +26,15 @@ task UDPServer(type: JavaExec) {
 
   main = 'customProtocol.udp.Server'
   standardInput = System.in
-
-  if (project.hasProperty("port") && project.hasProperty("host")) {
-    args(project.getProperty('port'), project.getProperty('host'));
+  if (project.hasProperty("port")) {
+    args(project.getProperty('port'))
   }
 
+
   args '8080' // default port
-  args 'localhost' // default host
+
+
+
 
 }
 
@@ -45,9 +47,9 @@ task UDPClient(type: JavaExec) {
 
   main = 'customProtocol.udp.Client'
   standardInput = System.in
-  if (project.hasProperty("port")) {
-    args(project.getProperty('port'))
+  if (project.hasProperty("port") && project.hasProperty("host")) {
+    args(project.getProperty('port'), project.getProperty('host'));
   }
   args '8080' // default port
-
+  args 'localhost' // default host
 }
