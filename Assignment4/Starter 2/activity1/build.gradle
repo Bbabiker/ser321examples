@@ -1,0 +1,84 @@
+apply plugin: 'application'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+   compile group: 'org.json', name: 'json', version: '20200518'
+}
+
+//define main class
+mainClassName = 'Concentration'
+
+task runTask1(type: JavaExec) {
+  group 'server'
+  description 'Creates Server socket waits for messages'
+
+  classpath = sourceSets.main.runtimeClasspath
+
+  main = 'taskone.Server'
+  standardInput = System.in
+  
+  // run with arguments e.g.: gradle runTask1 -Pport=9099 -q --console=plain
+  if (project.hasProperty('port')) {
+    args(project.getProperty('port'));
+  }
+
+  args '8000' // default port
+}
+
+task runTask2(type: JavaExec) {
+  group 'server'
+  description 'Creates multi-threaded Server socket waits for messages'
+
+  classpath = sourceSets.main.runtimeClasspath
+
+  main = 'tasktwo.ThreadedServer'
+  standardInput = System.in
+
+  // run with arguments e.g.: gradle runTask2 -Pport=9099 -q --console=plain
+  if (project.hasProperty('port')) {
+    args(project.getProperty('port'));
+
+  }
+  args '8000' // default port
+}
+  task runTask3(type: JavaExec) {
+    group 'server'
+    description 'Creates multi-threaded Server socket waits for messages'
+
+    classpath = sourceSets.main.runtimeClasspath
+
+    main = 'taskthree.ThreadPoolServer'
+    standardInput = System.in
+
+    // run with arguments e.g.: gradle runTask3 -Pport=9099 -q --console=plain
+    if (project.hasProperty("port")&& project.hasProperty("num")) {
+      args(project.getProperty('port'),project.getProperty('num'));
+    }
+
+    args '8000' // default port
+    args '3' // default 3 clients allowed to use the sysytem
+
+  }
+
+    task runClient(type: JavaExec) {
+      group 'client'
+      description 'Creates client socket sends a message to the server'
+
+      classpath = sourceSets.main.runtimeClasspath
+      standardInput = System.in
+
+      main = 'taskone.Client'
+      standardInput = System.in
+
+      // run with arguments e.g.: gradle runClient -Phost=localhost -Pport=9099 -q --console=plain
+      if (project.hasProperty("host") && project.hasProperty("port")) {
+        args(project.getProperty('host'), project.getProperty('port'));
+      }
+
+      args 'localhost' // default host
+      args '8000' // default port
+    }
+
