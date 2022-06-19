@@ -2,6 +2,8 @@
 ## Description
 This activity is about practicing threads. In this activity, i have added more functionalities as per the assignment instruction to minapulate a list bu utlizing a Json oreinted custom protocol.
 
+## Screen cast: https://youtu.be/2WHYxGocpUo
+
 ## Protocol
 
 ### Requests
@@ -50,7 +52,7 @@ Default: gradle runClient
         Default hos: local host
         
 Server:
-    gradle runtask2 -Pport='9000'
+    gradle runtask2 -Pport='9099'
     Default: gradle runTask2 
              Default port:8000
          
@@ -62,10 +64,10 @@ Default: gradle runClient
         Default hos: local host
         
 Server:
-     gradle runtask3 -Pport='9000' -Pclient='4'
+     gradle runtask3 -Pport='9099' -Pclient='4'
      Default: gradle runTask2 
              Default port:8000
-             Default nuber of client =3
+             Default number of client =3
 
          
          
